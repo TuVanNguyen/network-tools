@@ -54,7 +54,11 @@ if __name__ == '__main__':
     Input:
         sys.argv[1] : host name
         sys.argv[2] : port number
+        sys.argv[n] : any number of additional options
     """
-    portscan(sys.argv[1], sys.argv[2])
-    banner(sys.argv[1], sys.argv[2])
+
+    if '-b' in sys.argv:
+        banner(sys.argv[1], sys.argv[2])
+    if len(sys.argv) == 3:
+        portscan(sys.argv[1], sys.argv[2])
 
