@@ -27,6 +27,28 @@ def portscan(t_host, t_port):
         sock.close()
         print("Port Scanning Complete")
 
+
+def banner(t_host, t_port):
+    """
+    Banner grabbing for specified host at specified port
+    """
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP
+        if not t_port.isdigit():
+            raise PortValueError("",t_port)
+        sock.connect((t_host,int(t_port)))
+        sock.send('GET HTTP/1.1')
+        ret = sock.recv(1024)
+        print(str(ret))
+
+    except socket.gaierror:
+        print("Error: {} is an invalid host name".format(t_host))
+    except PortValueError as e:
+        print(e)
+    finally:
+        sock.close()
+ 
+
 if __name__ == '__main__':
     """
     Input:
@@ -34,3 +56,5 @@ if __name__ == '__main__':
         sys.argv[2] : port number
     """
     portscan(sys.argv[1], sys.argv[2])
+    banner(sys.argv[1], sys.argv[2])
+
