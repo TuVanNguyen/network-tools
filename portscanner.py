@@ -37,9 +37,9 @@ def banner(t_host, t_port):
         if not t_port.isdigit():
             raise PortValueError("",t_port)
         sock.connect((t_host,int(t_port)))
-        sock.send('GET HTTP/1.1')
-        ret = sock.recv(1024)
-        print(str(ret))
+        sock.send("GET / HTTP/1.1\r\nHost:{}\r\n\r\n".format(t_host))
+        response = sock.recv(4096)
+        print(response)
 
     except socket.gaierror:
         print("Error: {} is an invalid host name".format(t_host))
