@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import socket
+import sys
 
 def tcp_client(host, port):
     # create socket object
@@ -16,8 +17,13 @@ def tcp_client(host, port):
 
 
 if __name__ == "__main__":
-    target_host = "www.google.com"
-    target_port = 80
+    """
+    Input:
+        sys.argv[1] : target host name (e.g "google.com")
+        sys.argv[2]: target port number (e.g 80)
+    """
+    target_host = sys.argv[1]
+    target_port = int(sys.argv[2])
     tcp_client(target_host,target_port)
 
 
