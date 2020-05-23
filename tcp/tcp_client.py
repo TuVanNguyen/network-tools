@@ -27,10 +27,12 @@ def tcp_client(host, port):
         client.send("GET / HTTP/1.1\r\nHost:{}\r\n\r\n".format(host))
         #receive some data
         response = client.recv(4096)
+        client.close()
         print(response)
         return response
     except socket.gaierror:
         print("Error: {} is an invalid host name".format(host))
+        client.close()
     except PortValueError as e:
         print(e)
 
