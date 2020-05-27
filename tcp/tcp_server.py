@@ -1,41 +1,67 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import socket
 import threading
 import sys
+from customExceptions import QuitServer
+from customExceptions import PortValueError
 
-def tcp_server(bind_ip, bind_port):
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((bind_ip,bind_port))
-    server.listen(5) # 5 is maximum backlog of connections
-
-    print("[*] Listening on {0}:{1}".format(bind_ip,bind_port))
+class TCPServer:    
     
-    while True:
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.on = False
+
+    def start(self):
+        
+        #input check
         try:
-            client,addr = server.accept()
+            if not self.port.isdigit():
+                raise PortValueError("",self.port)
+        except PortValueError as e:
+            print(e)
+            return
 
-            print("[*] Accepted connection from: {0}:{1}".format(addr[0], addr[1]))
+        self.on = True
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind((self.host,int(self.port)))
+        server.listen(5) # 5 is maximum backlog of connections
 
-            #spin up client thread to handle incoming data
-            client_handler = threading.Thread(target=handle_client, args=(client,))
-            client_handler.start()
+        print("[*] Listening on {0}:{1}".format(self.host,self.port))
+        
+        while True:
+            try:
+                if not self.on:
+                    raise(QuitServer(self.host, self.port))
 
-        except KeyboardInterrupt: #graceful shutdown
-            server.close()
-            print("Shutting down server")
-            break
+                client,addr = server.accept()
+                print("[*] Accepted connection from: {0}:{1}".format(addr[0], addr[1]))
 
-def handle_client(client_socket):
-    
-    #print client requests
-    request = client_socket.recv(1024)
+                #spin up client thread to handle incoming data
+                client_handler = threading.Thread(target=self.handle_client, args=(client,))
+                client_handler.start()
+            except KeyboardInterrupt: #graceful shutdown
+                self.quit_server()
+            except QuitServer as e: #graceful shutdown
+                server.close()
+                print(e)
+                break
 
-    print("[*] Received: {}".format(request))
 
-    #send back a packet
-    client_socket.send("Thanks for hitting up your trusty local tcp server")
-    client_socket.close()
+    def quit_server(self):
+        self.on = False
+        
+    def handle_client(self,client_socket):
+        
+        #print client requests
+        request = client_socket.recv(1024)
+
+        print("[*] Received: {}".format(request))
+
+        #send back a packet
+        client_socket.sendall("Thanks for hitting up your trusty local tcp server".encode('utf-8'))
+        client_socket.close()
 
 if __name__ == "__main__":
     """
@@ -44,5 +70,6 @@ if __name__ == "__main__":
         sys.argv[2]: port server will listen on (e.g 9999)
     """
     bind_ip = sys.argv[1]
-    bind_port = int(sys.argv[2])
-    tcp_server(bind_ip, bind_port)
+    bind_port = sys.argv[2]
+    tcp_server = TCPServer(bind_ip, bind_port)
+    tcp_server.start()
